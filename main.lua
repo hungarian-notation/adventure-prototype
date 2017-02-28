@@ -23,7 +23,7 @@ local function Enemy(params)
   }
 end
 
-local spawnEnemy
+local spawnEnemy -- forward declaration of function that spawns enemies randomly on the screen
 
 local function PlayerController()
   local PLAYER_ACCEL = 1000
@@ -31,8 +31,8 @@ local function PlayerController()
   
   local SWORD_SWING_TIME = 0.05
   local SWORD_HOLD_TIME = 0.5
-  local SWORD_ANGLE = math.pi * 0.8
   
+  local SWORD_ANGLE = math.pi * 0.8
   local SWORD_RADIUS = 48
   local SWORD_INNER_RADIUS = 24
   
