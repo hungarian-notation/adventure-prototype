@@ -76,7 +76,7 @@ local function PlayerController()
   end
   
   local function attack(e, dt, ecs)
-    local dir = (Vector.new(love.mouse.getPosition()) - e.pos):normalized()
+    local dir = (Vector.new(love.mouse.getPosition()) - e.pos):normal()
     
     e.sword = Sword(dir)
     
@@ -89,8 +89,8 @@ local function PlayerController()
         local dist = toEntity:length() - (entity.radius * 2) 
                 
         if dist <= hitDist then
-          local angleTo = toEntity:getAngle()
-          local lowerAngle = e.sword.dir:getAngle() - e.sword.theta / 2
+          local angleTo = toEntity:angle()
+          local lowerAngle = e.sword.dir:angle() - e.sword.theta / 2
           local relAngle = normalize(angleTo - lowerAngle)
           
           if relAngle < e.sword.theta then
@@ -101,7 +101,7 @@ local function PlayerController()
               
               spawnEnemy(ecs)
             else
-              local knockBack = (e.sword.dir + toEntity:normalized()) / 2 * KNOCK_BACK_IMPULSE / entity.enemy.mass
+              local knockBack = (e.sword.dir + toEntity:normal()) / 2 * KNOCK_BACK_IMPULSE / entity.enemy.mass
               entity.vel = (entity.vel or Vector.zero()) + knockBack
             end
           end
@@ -174,14 +174,14 @@ local function ChaseController()
     for id, entity in ecs:each() do
       if entity.radius and entity.pos then
         if entity ~= e and (entity.pos - e.pos):length() < entity.radius + e.radius then
-          local dir = (e.pos - entity.pos):normalized(true)
+          local dir = (e.pos - entity.pos):normal(true)
           e.vel = ((e.vel or Vector.zero()) + (dir * CHASE_IMPULSE * dt))
         end
       end
     end
     
     if target then
-      local heading = (target.pos - e.pos):normalized(true)
+      local heading = (target.pos - e.pos):normal(true)
       e.vel = ((e.vel or Vector.zero()) + (heading * CHASE_ACCEL * dt)) * CHASE_DAMP ^ dt 
       e.pos = e.pos + e.vel * dt
     end
@@ -203,7 +203,7 @@ local function PlayerDrawable(avatar)
     if e.sword then
       local sword = e.sword
       
-      local angle = sword.dir:getAngle()
+      local angle = sword.dir:angle()
       local phase = math.min(1, sword.time / sword.holdTime)
       
       -- These control the rate at which the swing and fade

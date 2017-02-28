@@ -158,7 +158,7 @@ function vector:length () -- Returns the length of a vector-like table.
   return math.sqrt(self:length2())
 end
 
-function vector:normalized (silentZero) -- Returns a new vector equal to the normalized value of the current vector.
+function vector:normal (silentZero) -- Returns a new vector equal to the normalized value of the current vector.
   local len = self:length()
   
   if len == 0 then
@@ -172,7 +172,7 @@ function vector:normalized (silentZero) -- Returns a new vector equal to the nor
   end
 end
 
-function vector:getOrthogonal () -- Returns a new vector equal to the current vector rotated 90 degrees.
+function vector:orthogonal () -- Returns a new vector equal to the current vector rotated 90 degrees.
   return vector.new(-self.y, self.x)
 end
 
@@ -184,7 +184,7 @@ function vector:ceil ()  -- Returns a vector whose components equal the 'ceil' o
   return vector.new(math.ceil(self.x), math.ceil(self.y))
 end
 
-function vector:getAngle () -- Gets the angle in radians of this vector.
+function vector:angle () -- Gets the angle in radians of this vector.
   return math.atan2(self.y, self.x)
 end
 
