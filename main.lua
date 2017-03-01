@@ -5,6 +5,8 @@ local ECS = require 'eonz.ecs'
 
 local entities
 
+local hurtFlash = 0
+
 local keys = {
   up    = 'w',
   left  = 'a',
@@ -27,16 +29,18 @@ local spawnEnemy -- forward declaration of function that spawns enemies randomly
 
 local function PlayerController()
   local PLAYER_ACCEL = 1000
-  local PLAYER_DAMP = 0.0001
+  local PLAYER_DAMP = 0.01
   
   local SWORD_SWING_TIME = 0.05
-  local SWORD_HOLD_TIME = 0.5
+  local SWORD_HOLD_TIME = 0.4
   
   local SWORD_ANGLE = math.pi * 0.8
   local SWORD_RADIUS = 48
   local SWORD_INNER_RADIUS = 24
   
-  local KNOCK_BACK_IMPULSE = 1000
+  local SWING_VELOCITY_LOSS = 0.25
+  
+  local KNOCK_BACK_IMPULSE = 300
   
   local nextSwingDirection = 1
   
@@ -78,6 +82,7 @@ local function PlayerController()
   local function attack(e, dt, ecs)
     local dir = (Vector.new(love.mouse.getPosition()) - e.pos):normal()
     
+    e.vel = e.vel * SWING_VELOCITY_LOSS
     e.sword = Sword(dir)
     
     local hitDist = SWORD_RADIUS 
@@ -112,9 +117,16 @@ local function PlayerController()
   
   return function(e, dt, ecs)
     
-    if e.sword then
-      e.vel = Vector.zero()
-      
+    
+    for id, entity in ecs:each() do
+      if entity.enemy then
+        if (entity.pos - e.pos):length() < ((entity.radius or 0) + (e.radius or 0)) then
+          hurtFlash = 0.2
+        end
+      end
+    end
+    
+    if e.sword then      
       e.sword.time = e.sword.time + dt
       if e.sword.time >= e.sword.holdTime then
         e.sword = nil
@@ -211,7 +223,7 @@ local function PlayerDrawable(avatar)
       -- of the sword animation.
       
       local swingPhase = math.min(1, phase * (sword.holdTime / sword.swingTime))
-      local fadePhase = (1 - math.min(1, phase * 1)) ^ 2
+      local fadePhase = (1 - math.min(1, phase * 2)) ^ 2
       
       -- Determine the angles between which to draw the
       -- sword slash at the current point in the sword
@@ -241,13 +253,25 @@ end
 spawnEnemy = function(ecs) 
   local width, height = love.window.getMode()
   
+  local offVert = math.random() > 0.5
+  
+  local x, y
+  
+  if offVert then
+    x = math.random() * width
+    y = (math.random() > 0.5) and -10 or height + 10
+  else
+    x = (math.random() > 0.5) and -10 or width + 10
+    y = math.random() * height
+  end
+  
   ecs:create {
     radius      = 8,
     
     drawable    = CircleDrawable(),
     color       = {0x88, 0x99, 0x22},
     
-    pos         = Vector(math.random() * width, math.random() * height),
+    pos         = Vector(x, y),
     controller  = ChaseController(),
     enemy       = Enemy()
   }
@@ -273,12 +297,18 @@ function love.load(args)
 end
 
 function love.update(dt)
+  if hurtFlash > 0 then
+    hurtFlash = hurtFlash - dt
+  end
+  
   for id, entity in entities:each() do
     if entity.controller then entity:controller(dt, entities) end
   end
 end
 
 function love.draw()
+  love.graphics.clear(0xFF * math.min(1, math.max(hurtFlash, 0)), 0, 0)
+  
   for id, entity in entities:each() do
     if entity.drawable then
       love.graphics.origin()
