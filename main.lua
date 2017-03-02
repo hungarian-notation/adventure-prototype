@@ -1,9 +1,12 @@
 local Vector = require 'eonz.Vector'
 local ECS = require 'eonz.Entities'
 
+local util = require 'game.util'
+
 --
 
-local font = {}
+local cursors = {}
+local fonts = {}
 local entities
 local screenEffects = { hurtFlash=0 }
 
@@ -29,7 +32,7 @@ local function spawnEnemy(ecs)
   end
   
   ecs:create { -- Create Enemy Entity
-    radius      = 8,
+    radius      = 16,
     drawable    = require('game.graphics.CircleDrawable')(),
     color       = {0x88, 0x99, 0x22},
     pos         = Vector(x, y),
@@ -38,9 +41,41 @@ local function spawnEnemy(ecs)
   }
 end
 
+function love.keypressed(key, code, repeated)
+  if key == 'escape' then
+    love.event.quit()
+  end
+end
+
+local function genCursor() 
+  local csz = 16
+  local mx = csz / 2
+  local my = csz / 2
+  
+  local canvas = love.graphics.newCanvas(csz, csz)
+  
+  love.graphics.setCanvas(canvas)  
+  love.graphics.setColor{0xFF, 0x00, 0x00}
+  love.graphics.setLineWidth(1.5)
+  love.graphics.line(mx - csz / 2, my, mx + csz / 2, my)
+  love.graphics.line(mx, my - csz / 2, mx, my + csz / 2)
+  love.graphics.setCanvas()
+  
+  local cursor = love.mouse.newCursor(canvas:newImageData(), csz / 2, csz / 2)
+  
+  return cursor
+end
+
 function love.load(args)
-  font = {
-    damageNumbers=love.graphics.newFont("res/blocktopia.ttf", 10)
+  
+  cursors = { crosshair = genCursor() }
+  
+  love.window.setMode(1600, 900)
+  love.mouse.setGrabbed(true)
+  love.mouse.setCursor(cursors.crosshair)
+  
+  fonts = {
+    damageNumbers=love.graphics.newFont("res/blocktopia.ttf", 18)
   }
   
   entities = ECS.new()
@@ -55,7 +90,7 @@ function love.load(args)
     drawable    = require('game.graphics.PlayerDrawable')(require('game.graphics.CircleDrawable')()),
     pos         = Vector(200, 200),
     color       = {255, 255, 255},
-    controller  = require('game.behavior.PlayerController')(keys, spawnEnemy, screenEffects)
+    controller  = require('game.behavior.PlayerController')(keys, spawnEnemy, screenEffects, fonts)
   }
 end
 
@@ -71,6 +106,7 @@ end
 
 function love.draw()
   love.graphics.clear(0xFF * math.min(1, math.max(screenEffects.hurtFlash, 0)), 0, 0)
+  
   
   for id, entity in entities:each() do
     if entity.drawable then
