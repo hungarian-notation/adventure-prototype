@@ -1,32 +1,69 @@
-local ECS = {} ; ECS.__index = ECS
+local Entities = {} ; Entities.__index = Entities
 
-function ECS.new()
-  local new = setmetatable({}, ECS)
-  
-  new._next = 1
-  new._entities = {}
-  new._systems = {}
-  
-  return new
+function Entities.InjectEntity(func, ...)
+  return {
+    _isEntityInjector = true,
+    _injectionTarget = func,
+    _injectionArgs = {...}
+  }
 end
 
-function ECS:create(entity)
-  if entity._ecs then
-    error("entity already has _ecs tag")
-  else
-    entity._ecs = self
-    entity._eid = self._next
-    
-    self._entities[entity._eid] = entity
-    self._next = entity._eid + 1
+function Entities.InjectConfigured(func)
+  return function(...) 
+    return Entities.InjectEntity(func, ...)
   end
 end
 
-function ECS:destroy(entity)
-  if entity._ecs == self then
+function Entities.new()
+  local new = setmetatable({}, Entities)
+  new._next = 1
+  new._entities = {}
+  new._systems = {}
+  return new
+end
+
+local Entity = {} ; Entity.__index = Entity
+
+function Entity:system()
+  return self._entities
+end
+
+function Entity:each()
+	return self:system():each()
+end
+
+function Entity:id()
+  return self._eid	
+end
+
+function Entity:destroy(other)
+  self:system():destroy(other or self)
+end
+
+function Entities:create(entity)
+  if entity._entities then
+    error("entity already has _entities tag")
+  else
+    setmetatable(entity, Entity)
+    
+    entity._entities = self
+    entity._eid = self._next
+    self._entities[entity._eid] = entity
+    self._next = entity._eid + 1
+    
+    for k, v in pairs(entity) do
+    	if type(v) == 'table' and v._isEntityInjector and type(v._injectionTarget) == 'function' then
+        entity[k] = v._injectionTarget(entity, unpack(v._injectionArgs))
+      end
+    end
+  end
+end
+
+function Entities:destroy(entity)
+  if entity._entities == self then
     if self._entities[entity._eid] == entity then
       self._entities[entity._eid] = nil
-      entity._ecs = nil
+      entity._entities = nil
       entity._eid = nil
     else
       error("entity was not at the index it should have been")
@@ -36,8 +73,7 @@ function ECS:destroy(entity)
   end
 end
 
-function ECS:iterator(id)  
-  
+function Entities:iterator(id)  
   while true do
     id = id + 1
     
@@ -49,11 +85,10 @@ function ECS:iterator(id)
     
     -- no entity at id, but there are unused ids beyond
   end
-  
 end
 
-function ECS:each()
-  return ECS.iterator, self, 0
+function Entities:each()
+  return Entities.iterator, self, 0
 end
 
-return ECS
+return Entities

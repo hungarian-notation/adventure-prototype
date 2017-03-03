@@ -1,3 +1,8 @@
+if _G.EONZ_VECTOR_LOADED then
+  error("eonz vector loaded twice")
+else
+  _G.EONZ_VECTOR_LOADED = true
+end
 
 local vector = {type='vector'} ; vector.__index = vector
 local vector_metatable = {} ; setmetatable(vector, vector_metatable)

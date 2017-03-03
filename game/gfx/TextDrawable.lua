@@ -1,5 +1,3 @@
-local Vector = require 'eonz.Vector'
-
 local function TextDrawable(font, string, color) 
   local text = love.graphics.newText(font, string)
   

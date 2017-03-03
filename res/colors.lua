@@ -1,0 +1,3 @@
+return {
+  debug_text = { 0xFF, 0xFF, 0x00 }
+}

@@ -1,5 +1,3 @@
-local Vector = require 'eonz.Vector'
-
 return function(radius, rgba)
   return function(e)
     love.graphics.setColor(rgba or e.color or {255, 255, 255})

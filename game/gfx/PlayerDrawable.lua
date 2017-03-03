@@ -1,5 +1,3 @@
-local Vector = require 'eonz.Vector'
-
 return function(avatar)
   
   local SWORD_BLADE_SIZE = 0.1

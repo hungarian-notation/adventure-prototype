@@ -1,7 +1,5 @@
-local Vector = require 'eonz.Vector'
-local ECS = require 'eonz.Entities'
-
-local util = require 'game.util'
+require 'eonz' { global_vector = true, global_namespace = true, debug_messages = true }
+  game = lib.game
 
 --
 
@@ -19,7 +17,7 @@ local keys = {
 
 --
 
-local function spawnEnemy(ecs) 
+local function spawnEnemy(_entities) 
   local width, height = love.window.getMode()
   local x, y
   
@@ -31,13 +29,14 @@ local function spawnEnemy(ecs)
     y = math.random() * height
   end
   
-  ecs:create { -- Create Enemy Entity
+  _entities:create { -- Create Enemy Entity
     radius      = 16,
-    drawable    = require('game.graphics.CircleDrawable')(),
+    drawable    = game.gfx.CircleDrawable(),
     color       = {0x88, 0x99, 0x22},
-    pos         = Vector(x, y),
-    controller  = require('game.behavior.ChaseController')(),
-    enemy       = require('game.components.EnemyTag')()
+    pos         = vector(x, y),
+    controller  = game.control.EnemyController(),
+    enemy       = game.components.EnemyTag(),
+    strategy    = game.strategy.LungeStrategy { matchVelocity = true }
   }
 end
 
@@ -51,7 +50,6 @@ local function genCursor()
   local csz = 16
   local mx = csz / 2
   local my = csz / 2
-  
   local canvas = love.graphics.newCanvas(csz, csz)
   
   love.graphics.setCanvas(canvas)  
@@ -67,6 +65,13 @@ local function genCursor()
 end
 
 function love.load(args)
+  game:setVariable("res", 
+    {
+      fonts = lib.res.fonts,
+      textures = {}, 
+      sounds = {},
+      colors = lib.res.colors
+    }) -- resource table
   
   cursors = { crosshair = genCursor() }
   
@@ -74,23 +79,20 @@ function love.load(args)
   love.mouse.setGrabbed(true)
   love.mouse.setCursor(cursors.crosshair)
   
-  fonts = {
-    damageNumbers=love.graphics.newFont("res/blocktopia.ttf", 18)
-  }
   
-  entities = ECS.new()
-  
+  entities = eonz.entities.new()
+
   for i = 1, 20 do
     spawnEnemy(entities)
-  end
-  
+  end    
+    
   entities:create { -- Player Entity
     radius      = 16,
     isPlayer    = true,
-    drawable    = require('game.graphics.PlayerDrawable')(require('game.graphics.CircleDrawable')()),
-    pos         = Vector(200, 200),
+    drawable    = game.gfx.PlayerDrawable(game.gfx.CircleDrawable()),
+    pos         = vector(200, 200),
     color       = {255, 255, 255},
-    controller  = require('game.behavior.PlayerController')(keys, spawnEnemy, screenEffects, fonts)
+    controller  = game.control.PlayerController(keys, spawnEnemy, screenEffects)
   }
 end
 
@@ -100,13 +102,19 @@ function love.update(dt)
   end
   
   for id, entity in entities:each() do
-    if entity.controller then entity:controller(dt, entities) end
+    if entity.controller then 
+      if type(entity.controller) == 'function' then
+        entity:controller(dt) 
+      elseif type(entity.controller) == 'table' then
+        entity.controller:act(dt)
+      end
+    end
   end
 end
 
 function love.draw()
-  love.graphics.clear(0xFF * math.min(1, math.max(screenEffects.hurtFlash, 0)), 0, 0)
   
+  love.graphics.clear(0xFF * math.min(1, math.max(screenEffects.hurtFlash, 0)), 0, 0)
   
   for id, entity in entities:each() do
     if entity.drawable then
@@ -116,7 +124,16 @@ function love.draw()
         love.graphics.translate(entity.pos.x, entity.pos.y)
       end
       
-      entity:drawable(entities)
+      entity:drawable()
     end
   end
+  
+  
+  love.graphics.origin()
+      
+  local fpsText = love.graphics.newText(game.res.fonts.debug_text, "FPS: " .. love.timer.getFPS())
+  
+  love.graphics.setColor(game.res.colors.debug_text)
+  love.graphics.draw(fpsText, 20, 20)
+    
 end

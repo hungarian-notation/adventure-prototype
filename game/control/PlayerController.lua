@@ -1,6 +1,3 @@
-local Vector = require "eonz.Vector"
-local util = require 'game.util'
-
 return function(keys, spawnEnemy, screenEffects, fonts)
   
   local PLAYER_ACCEL = 1000
@@ -9,7 +6,7 @@ return function(keys, spawnEnemy, screenEffects, fonts)
   
   local SWORD_SWING_TIME = 0.05
   local SWORD_HOLD_TIME = 0.4
-  local SWORD_ANGLE = math.pi * 0.8
+  local SWORD_ANGLE = math.pi * 0.8 
   local SWORD_RADIUS = 58
   local SWORD_INNER_RADIUS = 24
   
@@ -59,7 +56,7 @@ return function(keys, spawnEnemy, screenEffects, fonts)
   end
   
   local function getDirection(e) 
-    return (Vector.new(love.mouse.getPosition()) - e.pos):normal()
+    return (vector.new(love.mouse.getPosition()) - e.pos):normal()
   end
   
   local function hitCallback(projectile, target, ecs)
@@ -67,14 +64,14 @@ return function(keys, spawnEnemy, screenEffects, fonts)
       target.enemy.health = target.enemy.health - 1
       
       local damage = math.floor(math.random() * 20)
-      ecs:create(util.newDamageNumber(target.pos + Vector(0, -10), fonts.damageNumbers, damage))
+      projectile:system():create(game.util.newDamageNumber(target.pos + vector(0, -30), damage))
             
       local knockBack = projectile.vel * (projectile.mass or 0) / target.enemy.mass
-      target.vel = target.vel + knockBack
+      target.vel = (target.vel or vector.zero()) + knockBack
             
       if target.enemy.health <= 0 then
-        ecs:destroy(target)
-        spawnEnemy(ecs)
+        projectile:system():destroy(target)
+        spawnEnemy(projectile:system())
       end
       
       return false
@@ -83,22 +80,22 @@ return function(keys, spawnEnemy, screenEffects, fonts)
     return true
   end
   
-  local function attackRanged(e, dt, ecs)
+  local function attackRanged(e, dt)
     local dir = getDirection(e)
     local vel = dir * BOW_SHOT_SPEED
     
-    ecs:create {
+    e:system():create {
       pos = e.pos,
       vel = vel,
       mass = BOW_SHOT_MASS,
-      controller = require('game.behavior.ProjectileController')(hitCallback),
-      drawable = require('game.graphics.CircleDrawable')(),
+      controller = game.control.ProjectileController(hitCallback),
+      drawable = game.gfx.CircleDrawable(),
       radius = BOW_SHOT_RADIUS,
       color = {0xFF, 0x00, 0x00}
     }
   end
   
-  local function attackMelee(e, dt, ecs)
+  local function attackMelee(e, dt)
     
     local dir = getDirection(e)
     
@@ -107,7 +104,7 @@ return function(keys, spawnEnemy, screenEffects, fonts)
     
     local hitDist = SWORD_RADIUS 
     
-    for id, entity in ecs:each() do
+    for id, entity in e:each() do
       if entity.enemy then
         
         local toEntity = entity.pos - e.pos
@@ -122,14 +119,14 @@ return function(keys, spawnEnemy, screenEffects, fonts)
             entity.enemy.health = entity.enemy.health - 1
             
             local damage = math.floor(math.random() * 20)
-            ecs:create(util.newDamageNumber(entity.pos + Vector(0, -10), fonts.damageNumbers, damage))
+            e:system():create(game.util.newDamageNumber(entity.pos + vector(0, -30), damage))
               
             if entity.enemy.health <= 0 then
-              ecs:destroy(entity)
-              spawnEnemy(ecs)
+              entity:destroy()
+              spawnEnemy(e:system())
             else
               local knockBack = (e.sword.dir + toEntity:normal()) / 2 * KNOCK_BACK_IMPULSE / entity.enemy.mass
-              entity.vel = (entity.vel or Vector.zero()) + knockBack
+              entity.vel = (entity.vel or vector.zero()) + knockBack
             end
           end
         end
@@ -139,7 +136,7 @@ return function(keys, spawnEnemy, screenEffects, fonts)
   
   return function(e, dt, ecs)
     
-    for id, entity in ecs:each() do
+    for id, entity in e:each() do
       if entity.enemy then
         if (entity.pos - e.pos):length() < ((entity.radius or 0) + (e.radius or 0)) then
           screenEffects.hurtFlash = 0.2
@@ -174,7 +171,7 @@ return function(keys, spawnEnemy, screenEffects, fonts)
     
     -- Movement Control
     
-    local control = Vector()
+    local control = vector()
     local anyControl = false
     
     if love.keyboard.isDown(keys.left) then
@@ -202,7 +199,7 @@ return function(keys, spawnEnemy, screenEffects, fonts)
       e.vel = e.vel + (control * PLAYER_ACCEL * dt)
     end
     
-    e.pos = e.pos + ((e.vel or Vector.zero()) * dt)
-    e.vel = (e.vel or Vector.zero()) * (anyControl and PLAYER_DAMP or PLAYER_NO_CONTROL_DAMP) ^ dt
+    e.pos = e.pos + ((e.vel or vector.zero()) * dt)
+    e.vel = (e.vel or vector.zero()) * (anyControl and PLAYER_DAMP or PLAYER_NO_CONTROL_DAMP) ^ dt
   end
 end
