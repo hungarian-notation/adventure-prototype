@@ -63,6 +63,8 @@ return function(keys, spawnEnemy, screenEffects, fonts)
     if target.enemy then
       target.enemy.health = target.enemy.health - 1
       
+      love.audio.play(game.res.sounds.hit)
+      
       local damage = math.floor(math.random() * 20)
       projectile:system():create(game.util.newDamageNumber(target.pos + vector(0, -30), damage))
             
@@ -71,6 +73,7 @@ return function(keys, spawnEnemy, screenEffects, fonts)
             
       if target.enemy.health <= 0 then
         projectile:system():destroy(target)
+        game.res.sounds.kill:play()
         spawnEnemy(projectile:system())
       end
       
@@ -83,6 +86,8 @@ return function(keys, spawnEnemy, screenEffects, fonts)
   local function attackRanged(e, dt)
     local dir = getDirection(e)
     local vel = dir * BOW_SHOT_SPEED
+    
+    love.audio.play(game.res.sounds.shoot)
     
     e:system():create {
       pos = e.pos,
@@ -104,18 +109,25 @@ return function(keys, spawnEnemy, screenEffects, fonts)
     
     local hitDist = SWORD_RADIUS 
     
+    game.res.sounds.slash:setPitch(1 + math.random() * 0.2)    
+    love.audio.play(game.res.sounds.slash)
+      
     for id, entity in e:each() do
       if entity.enemy then
         
         local toEntity = entity.pos - e.pos
         local dist = toEntity:length() - (entity.radius * 2) 
                 
+    
         if dist <= hitDist then
           local angleTo = toEntity:angle()
           local lowerAngle = e.sword.dir:angle() - e.sword.theta / 2
           local relAngle = normalize(angleTo - lowerAngle)
           
           if relAngle < e.sword.theta then
+            game.res.sounds.hit:setPitch(1 + math.random() * 0.2)    
+            love.audio.play(game.res.sounds.hit)
+    
             entity.enemy.health = entity.enemy.health - 1
             
             local damage = math.floor(math.random() * 20)
@@ -123,6 +135,7 @@ return function(keys, spawnEnemy, screenEffects, fonts)
               
             if entity.enemy.health <= 0 then
               entity:destroy()
+              game.res.sounds.kill:play()
               spawnEnemy(e:system())
             else
               local knockBack = (e.sword.dir + toEntity:normal()) / 2 * KNOCK_BACK_IMPULSE / entity.enemy.mass

@@ -70,7 +70,7 @@ function love.load(args)
     {
       fonts = lib.res.fonts,
       textures = {}, 
-      sounds = {},
+      sounds = lib.res.sounds,
       colors = lib.res.colors
     }) -- resource table
   
@@ -114,7 +114,6 @@ function love.update(dt)
 end
 
 function love.draw()
-  
   love.graphics.clear(0xFF * math.min(1, math.max(screenEffects.hurtFlash, 0)), 0, 0)
   
   for id, entity in entities:each() do
@@ -129,12 +128,10 @@ function love.draw()
     end
   end
   
-  
   love.graphics.origin()
       
   local fpsText = love.graphics.newText(game.res.fonts.debug_text, "FPS: " .. love.timer.getFPS())
   
   love.graphics.setColor(game.res.colors.debug_text)
   love.graphics.draw(fpsText, 20, 20)
-    
 end
