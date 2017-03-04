@@ -30,13 +30,14 @@ local function spawnEnemy(_entities)
   end
   
   _entities:create { -- Create Enemy Entity
-    radius      = 16,
+    radius      = 10,
     drawable    = game.gfx.CircleDrawable(),
     color       = {0x88, 0x99, 0x22},
     pos         = vector(x, y),
-    controller  = game.control.EnemyController(),
-    enemy       = game.components.EnemyTag(),
-    strategy    = game.strategy.LungeStrategy { matchVelocity = true }
+    controller  = game.control.TacticsController { 
+      tactic = game.strategy.ZombieStrat()
+    },
+    enemy       = game.components.EnemyTag()
   }
 end
 
