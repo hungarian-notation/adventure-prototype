@@ -1,7 +1,7 @@
 local tactics = game.tactics
 local util = game.tactics.util
 
-local CLOSE_SPEED = 100
+local CLOSE_SPEED = 200
 local MAX_ACCEL = 300
 
 return function(params)

@@ -111,18 +111,37 @@ local SLIME_TYPES = {
     
     rarity = 0.005,
     
-    script = split('pinky', 1, 2)
+    script = split('pinky', 1)
   }
 }
 
-function enemies.RandomSlime()  
+function enemies.RandomSlime(roster)  
+  
+  local function getRarity(slime)
+    if roster then
+      for rosteredSlime, rarity in pairs(roster) do
+      	if slime == rosteredSlime then
+          return true, rarity
+        end
+      end
+    else
+      return true, SLIME_TYPES[slime].rarity
+    end
+  end
+  
   local function selectType() 
     local types = {}
     local totalRarity = 0
     
-    for k, v in pairs(SLIME_TYPES) do
-      table.insert(types, { name=k, rarity=v.rarity })
-      totalRarity = totalRarity + v.rarity
+    for slime, stats in pairs(SLIME_TYPES) do
+      local allowed, rarity = getRarity(slime)
+      
+      print(slime,allowed, rarity)
+        
+      if allowed then
+        table.insert(types, { name=slime, rarity=rarity })
+        totalRarity = totalRarity + rarity
+      end
     end
     
     local selector = math.random() * totalRarity
@@ -142,7 +161,6 @@ function enemies.RandomSlime()
 end
 
 function enemies.Slime(slime)
-  
   slime = SLIME_TYPES[slime or 'green']
   
 	return { 
@@ -160,29 +178,35 @@ function enemies.Slime(slime)
   }
 end
 
-local function getRandomPosition()
+function enemies.getRandomPosition()
   local width, height = love.window.getMode()
-  local x, y
+  
+  local x, y = 0, 0
+  local dx, dy = 0, 0
   
   if math.random() > 0.5 then
     x = math.random() * width
     y = (math.random() > 0.5) and -10 or height + 10
+    dy = y < 0 and 1 or -1
   else
     x = (math.random() > 0.5) and -10 or width + 10
     y = math.random() * height
+    dx = x < 0 and 1 or -1
   end
   
-  return vector(x, y)
+  return vector(x, y), vector(dx, dy)
 end
 
-function enemies.random()
-  local enemy = enemies.RandomSlime()
-  enemy.pos = getRandomPosition()
-  return enemy
+function enemies.random(roster)
+  local spawned = enemies.RandomSlime(roster)
+  local pos, dir = enemies.getRandomPosition()
+  spawned.pos = pos
+  spawned.vel = dir * 1000
+  return spawned
 end
 
-function enemies.spawn(system) 
-  return system:create(enemies.random())
+function enemies.spawn(system, roster) 
+  return system:create(enemies.random(roster))
 end
 
 return enemies

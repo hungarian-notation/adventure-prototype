@@ -31,7 +31,7 @@ local function EnemyTag(entity, params)
     
     self.health = self.health - attack.damage
     
-    entity:set('flicker', game.components.Flicker(enemy.flicker))
+    --entity:set('flicker', game.components.Flicker(enemy.flicker))
     
     entity:system():create(game.util.newDamageNumber(entity.pos + vector(0, -30), attack.damage))
   

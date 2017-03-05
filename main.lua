@@ -11,7 +11,7 @@ _G['game'] = lib.game
 local cursors = {}
 local fonts = {}
 local entities
-local screenEffects = { hurtFlash=0 }
+local screenEffects = { hurtFlash=0, color=nil, displayed={0x00, 0x00, 0x00} }
 
 local keys = {
   up    = 'w',
@@ -65,7 +65,7 @@ function love.load(args)
   entities = eonz.entities.new()
 
   entities:create {
-    controller  = game.control.Spawner()
+    controller  = game.control.Spawner(screenEffects)
   }
 
   entities:create { -- Player Entity
@@ -84,13 +84,27 @@ function love.update(dt)
     screenEffects.hurtFlash = screenEffects.hurtFlash - dt
   end
   
+  local goalColor = screenEffects.color or {0x00, 0x00, 0x00}
+  local displayedColor = screenEffects.displayed
+  
+  local fade = 0.1
+  
+  print(fade)
+  
+  for i=1,3 do
+    displayedColor[i] = displayedColor[i] * (1-fade) + goalColor[i] * fade
+  end
+  
   for id, entity in entities:each() do
     eonz.event.dispatch(entity, game.event.update, dt) 
   end
 end
 
 function love.draw()
-  love.graphics.clear(0xFF * math.min(1, math.max(screenEffects.hurtFlash, 0)), 0, 0)
+  local flash = {0xFF * math.min(1, math.max(screenEffects.hurtFlash, 0)), 0, 0}
+  local displayedColor = screenEffects.displayed
+  
+  love.graphics.clear{flash[1] + displayedColor[1], flash[2] + displayedColor[2], flash[3] + displayedColor[3]}
   
   for id, entity in entities:each() do
     if type(entity.visible) ~= 'boolean' or entity.visible == true then
