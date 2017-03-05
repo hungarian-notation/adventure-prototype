@@ -63,8 +63,9 @@ local function Controller(e, keys, screenEffects)
     
     local function hitCallback(projectile, target, ecs)
       if target.enemy then
-        target:dispatch(game.event.attack, { damage=2, source=e })
-        return false
+        local event = { damage=2, source=e }
+        target:dispatch(game.event.attack, event)
+        return event.cancelled
       end
       
       return true

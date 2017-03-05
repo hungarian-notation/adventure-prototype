@@ -50,6 +50,10 @@ function Entity:set(key, value)
   rawset(self, key, self:resolve(value))
 end
 
+function Entity:add(component)
+  table.insert(self, self:resolve(component))
+end
+
 function Entity:dispatch(event, ...)
   local targets = {}
   

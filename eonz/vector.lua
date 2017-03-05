@@ -23,6 +23,10 @@ function vector.zero() -- zero constructor
   return vector.new(0, 0)
 end
 
+function vector.polar(theta, radius)
+  return vector.new(math.cos(theta) * radius, math.sin(theta) * radius)
+end
+
 function vector.clone(other) -- clones another vector
   
   -- Note that this can also be called as vector_instance:clone() to clone

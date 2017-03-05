@@ -6,20 +6,37 @@ local function EnemyTag(entity, params)
   
   local enemy = {}
   
+  enemy.flicker = params.flicker or 0.5
   enemy.weight = params.weight or 1
   enemy.maxHealth = params.health or 3
   enemy.health = enemy.maxHealth
+  enemy.active = false
+  
+  function enemy:on_update(dt)
+    self.active = true
+    self.on_update = nil
+  end
   
   function enemy:on_attack(attack)
+    if entity.flicker or not self.active then
+      attack.cancelled = true
+      return
+    end
+    
+    local severity = math.min(1, math.max(0, attack.damage / self.maxHealth))
     
     game.res.sounds.hit:setPitch(1 + math.random() * 0.2)    
+    
     love.audio.play(game.res.sounds.hit)
     
     self.health = self.health - attack.damage
     
+    entity:set('flicker', game.components.Flicker(enemy.flicker))
+    
     entity:system():create(game.util.newDamageNumber(entity.pos + vector(0, -30), attack.damage))
   
-    local knockback = (KNOCKBACK_BASE + KNOCKBACK_FACTOR * math.min(1, math.max(0, attack.damage / self.maxHealth))) / (self.weight / (attack.weight or 1))
+    local knockback = (KNOCKBACK_BASE + KNOCKBACK_FACTOR * severity) / (self.weight / (attack.weight or 1))
+    
     local direction = attack.direction or (entity.pos - attack.source.pos):normal()
     
     entity.vel = (direction * knockback)

@@ -30,11 +30,10 @@ end
 
 function Entities:create(components)
   local id = self._next
-  
   local entity = Entity.create(self, id, components)
-  
   self._entities[id] = entity
   self._next = id + 1
+  return entity
 end
 
 function Entities:destroy(entity)
@@ -48,6 +47,12 @@ function Entities:destroy(entity)
     end
   else
     error("entity is not in this system")
+  end
+end
+
+function Entities:broadcast(event, ...)
+	for id, entity in self:each() do
+    entity:dispatch(event, ...)
   end
 end
 

@@ -5,8 +5,11 @@ local CLOSE_SPEED = 100
 local MAX_ACCEL = 300
 
 return function(params)
+  
+  local accel = params.accel or MAX_ACCEL
+  
   return function(env)
-    local timer = 1 * math.random() + 1
+    local timer = params.duration or (1 * math.random() + 1)
     env.controller:setDamping(0.5)
     
     local function update(dt)
@@ -27,7 +30,7 @@ return function(params)
       
       local velError = targetVel - env.entity.vel
       
-      env.controller:accelerate(velError:normal() * MAX_ACCEL)
+      env.controller:accelerate(velError:normal() * accel)
       
       if timer < 0 then
         util.completed(env, params)

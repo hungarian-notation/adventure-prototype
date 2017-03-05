@@ -22,7 +22,6 @@ local keys = {
 
 --
 
-
 function love.keypressed(key, code, repeated)
   if key == 'escape' then
     love.event.quit()
@@ -65,10 +64,10 @@ function love.load(args)
   
   entities = eonz.entities.new()
 
-  for i = 1, 10 do
-    game.enemies.spawn(entities)
-  end    
-    
+  entities:create {
+    controller  = game.control.Spawner()
+  }
+
   entities:create { -- Player Entity
     radius      = 16,
     isPlayer    = true,
@@ -94,6 +93,7 @@ function love.draw()
   love.graphics.clear(0xFF * math.min(1, math.max(screenEffects.hurtFlash, 0)), 0, 0)
   
   for id, entity in entities:each() do
+    if type(entity.visible) ~= 'boolean' or entity.visible == true then
       love.graphics.origin()
       
       if entity.pos then 
@@ -101,12 +101,13 @@ function love.draw()
       end
       
       eonz.event.dispatch(entity, game.event.draw) 
+    end
   end
   
-  love.graphics.origin()
-      
-  local fpsText = love.graphics.newText(game.res.fonts.debug_text, "FPS: " .. love.timer.getFPS())
+  local width, height = love.window.getMode()
   
+  love.graphics.origin()
+  local fpsText = love.graphics.newText(game.res.fonts.debug_text, "FPS: " .. love.timer.getFPS())
   love.graphics.setColor(game.res.colors.debug_text)
-  love.graphics.draw(fpsText, 20, 20)
+  love.graphics.draw(fpsText, width - 150 , 20)
 end
