@@ -38,13 +38,11 @@ function Entities:create(components)
 end
 
 function Entities:destroy(entity)
-  if entity._entities == self then    
-    if self._entities[entity._eid] == entity then
+  if entity._meta._entities == self then    
+    if self._entities[entity._meta._id] == entity then
       entity:dispatch('destroyed')
-      
-      self._entities[entity._eid] = nil
-      entity._entities = nil
-      entity._eid = nil
+      self._entities[entity._meta._id] = nil
+      entity._meta = nil
     else
       error("entity was not at the index it should have been")
     end

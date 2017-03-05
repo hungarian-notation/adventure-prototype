@@ -82,7 +82,7 @@ end
 function TacticsController:on_update(dt)
   local entity = self._entity
   
-  assert(type(dt) == 'number')
+  assert(type(dt) == 'number', 'expected number, found ' ..type(dt))
   
   self:resetAcceleration()
   self:accelerate(getAvoidanceAcceleration(entity, dt))

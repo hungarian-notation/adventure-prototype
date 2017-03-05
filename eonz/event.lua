@@ -27,11 +27,11 @@ function event.isListener(listener)
   end
 end
 
-function event.dispatch(listener, name, ...)
+function event.dispatch(listener, name, ...) 
 	local direct = event.getHandlerFor(name)
   
   if type(listener) == 'table' then
-    if type(listener[direct]) == 'function' then
+    if type(listener[direct]) == 'function' then      
       return listener[direct](listener, ...)
     elseif type(listener[DEFAULT_HANDLER]) == 'function' then
       return listener[DEFAULT_HANDLER](listener, name, ...)

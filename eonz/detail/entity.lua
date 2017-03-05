@@ -5,13 +5,12 @@ Entity.INJECTOR_TARGET = '_eonz_injectorTarget'
 Entity.INJECTOR_ARGS = '_eonz_injectionArgs'
 
 function Entity.create(system, id, components)
-  if components._entities then
-    error("table already has _entities tag")
+  if components._meta then
+    error("table already has _meta tag")
   else
     local entity = {}
     
-    entity._entities = system
-    entity._eid = id
+    entity._meta = { _entities = system, _id = id }
     
     setmetatable(entity, Entity)
     
@@ -24,7 +23,7 @@ function Entity.create(system, id, components)
 end
 
 function Entity:system()
-  return self._entities
+  return self._meta._entities
 end
 
 function Entity:each()
@@ -32,7 +31,7 @@ function Entity:each()
 end
 
 function Entity:id()
-  return self._eid	
+  return self._meta._id	
 end
 
 function Entity:destroy(other)
@@ -52,13 +51,21 @@ function Entity:set(key, value)
 end
 
 function Entity:dispatch(event, ...)
-  self:on_event(event, ...)
+  local targets = {}
+  
+  for k, v in pairs(self) do
+    if (type(k) ~= 'string') or (k[1] ~= '_') then
+      table.insert(targets, v)
+    end
+  end
+  
+  for k, v in ipairs(targets) do
+    eonz.event.dispatch(v, event, ...)
+  end
 end
 
-function Entity:on_event(name, ...)
-  for k, v in pairs(self) do
-    eonz.event.dispatch(v, name, ...)
-  end
+function Entity:on_event(event, ...)
+  self:dispatch(event, ...)
 end
 
 return Entity

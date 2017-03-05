@@ -1,6 +1,11 @@
 require 'eonz' { global_vector = true, global_namespace = true, debug_messages = true }
-  game = lib.game
 
+-- Any time we declare a true global in this codebase we use the _G table like so.
+_G['game'] = lib.game 
+-- Any other pollution of the global scope is accidental and a bug.
+
+--
+--
 --
 
 local cursors = {}
@@ -17,45 +22,6 @@ local keys = {
 
 --
 
-local function spawnEnemy(_entities) 
-  local width, height = love.window.getMode()
-  local x, y
-  
-  if math.random() > 0.5 then
-    x = math.random() * width
-    y = (math.random() > 0.5) and -10 or height + 10
-  else
-    x = (math.random() > 0.5) and -10 or width + 10
-    y = math.random() * height
-  end
-  
-  _entities:create { -- Create Enemy Entity
-    
-    radius      = 10,
-    color       = {0x88, 0x99, 0x22},
-    pos         = vector(x, y),
-    vel         = vector.zero(),
-    
-    enemy       = game.components.EnemyComponent {
-      health = 3
-    },
-    
-    -- Components
-    
-    game.control.TacticsController { 
-      strategy = game.strategy.SlimeStrategy
-    },
-    
-    game.gfx.CircleDrawable(),
-    
-    { 
-      on_death = function ()
-        spawnEnemy(_entities)
-      end
-    }
-    
-  }
-end
 
 function love.keypressed(key, code, repeated)
   if key == 'escape' then
@@ -97,11 +63,10 @@ function love.load(args)
   love.mouse.setGrabbed(true)
   love.mouse.setCursor(cursors.crosshair)
   
-  
   entities = eonz.entities.new()
 
-  for i = 1, 20 do
-    spawnEnemy(entities)
+  for i = 1, 10 do
+    game.enemies.spawn(entities)
   end    
     
   entities:create { -- Player Entity
@@ -111,7 +76,7 @@ function love.load(args)
     pos         = vector(200, 200),
     vel         = vector.zero(),
     color       = {255, 255, 255},
-    controller  = game.control.PlayerController(keys, spawnEnemy, screenEffects)
+    controller  = game.control.PlayerController(keys, screenEffects)
   }
 end
 

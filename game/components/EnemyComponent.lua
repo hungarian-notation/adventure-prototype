@@ -11,6 +11,7 @@ local function EnemyTag(entity, params)
   enemy.health = enemy.maxHealth
   
   function enemy:on_attack(attack)
+    
     game.res.sounds.hit:setPitch(1 + math.random() * 0.2)    
     love.audio.play(game.res.sounds.hit)
     

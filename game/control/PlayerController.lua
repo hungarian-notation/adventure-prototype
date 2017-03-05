@@ -1,4 +1,4 @@
-local function Controller(e, keys, spawnEnemy, screenEffects, fonts)
+local function Controller(e, keys, screenEffects)
   
   local PLAYER_ACCEL = 1000
   local PLAYER_DAMP = 0.01
@@ -59,39 +59,17 @@ local function Controller(e, keys, spawnEnemy, screenEffects, fonts)
     return (vector.new(love.mouse.getPosition()) - e.pos):normal()
   end
   
-  local function hitCallback(projectile, target, ecs)
-    if target.enemy then
-      
-      
-      target:dispatch(game.event.attack, { damage=2, source=e })
-      
-      --[[
-      
-      target.enemy.health = target.enemy.health - 1
-      
-      love.audio.play(game.res.sounds.hit)
-      
-      local damage = math.floor(math.random() * 20)
-      projectile:system():create(game.util.newDamageNumber(target.pos + vector(0, -30), damage))
-            
-      local knockBack = projectile.vel * (projectile.mass or 0) / target.enemy.mass
-      target.vel = (target.vel or vector.zero()) + knockBack
-            
-      if target.enemy.health <= 0 then
-        projectile:system():destroy(target)
-        game.res.sounds.kill:play()
-        spawnEnemy(projectile:system())
+  local function attackRanged(e, dt)
+    
+    local function hitCallback(projectile, target, ecs)
+      if target.enemy then
+        target:dispatch(game.event.attack, { damage=2, source=e })
+        return false
       end
       
-      ]]
-      
-      return false
+      return true
     end
-    
-    return true
-  end
   
-  local function attackRanged(e, dt)
     local dir = getDirection(e)
     local vel = dir * BOW_SHOT_SPEED
     
