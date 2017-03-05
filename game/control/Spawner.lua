@@ -42,15 +42,12 @@ local function Spawner(entity, screen)
     
     function tracker:on_death()
     	spawner.kills = spawner.kills + 1
-      print(tostring(spawner.kills) .. " Kills!")
     end
     
     return tracker
   end
   
   function self:startChallenge()
-  	print("STARTING CHALLENGE")
-    
     screen.color = {0x33, 0x33, 0x22}
     
     self.challenge = self.nextChallenge

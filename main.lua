@@ -88,9 +88,7 @@ function love.update(dt)
   local displayedColor = screenEffects.displayed
   
   local fade = 0.1
-  
-  print(fade)
-  
+
   for i=1,3 do
     displayedColor[i] = displayedColor[i] * (1-fade) + goalColor[i] * fade
   end

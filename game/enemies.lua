@@ -136,8 +136,6 @@ function enemies.RandomSlime(roster)
     for slime, stats in pairs(SLIME_TYPES) do
       local allowed, rarity = getRarity(slime)
       
-      print(slime,allowed, rarity)
-        
       if allowed then
         table.insert(types, { name=slime, rarity=rarity })
         totalRarity = totalRarity + rarity
