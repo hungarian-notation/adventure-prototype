@@ -30,14 +30,30 @@ local function spawnEnemy(_entities)
   end
   
   _entities:create { -- Create Enemy Entity
+    
     radius      = 10,
-    drawable    = game.gfx.CircleDrawable(),
     color       = {0x88, 0x99, 0x22},
     pos         = vector(x, y),
-    controller  = game.control.TacticsController { 
-      tactic = game.strategy.ZombieStrat()
+    vel         = vector.zero(),
+    
+    enemy       = game.components.EnemyComponent {
+      health = 3
     },
-    enemy       = game.components.EnemyTag()
+    
+    -- Components
+    
+    game.control.TacticsController { 
+      strategy = game.strategy.SlimeStrategy
+    },
+    
+    game.gfx.CircleDrawable(),
+    
+    { 
+      on_death = function ()
+        spawnEnemy(_entities)
+      end
+    }
+    
   }
 end
 
@@ -66,6 +82,7 @@ local function genCursor()
 end
 
 function love.load(args)
+  
   game:setVariable("res", 
     {
       fonts = lib.res.fonts,
@@ -92,6 +109,7 @@ function love.load(args)
     isPlayer    = true,
     drawable    = game.gfx.PlayerDrawable(game.gfx.CircleDrawable()),
     pos         = vector(200, 200),
+    vel         = vector.zero(),
     color       = {255, 255, 255},
     controller  = game.control.PlayerController(keys, spawnEnemy, screenEffects)
   }
@@ -103,13 +121,7 @@ function love.update(dt)
   end
   
   for id, entity in entities:each() do
-    if entity.controller then 
-      if type(entity.controller) == 'function' then
-        entity:controller(dt) 
-      elseif type(entity.controller) == 'table' then
-        entity.controller:act(dt)
-      end
-    end
+    eonz.event.dispatch(entity, game.event.update, dt) 
   end
 end
 
@@ -117,15 +129,13 @@ function love.draw()
   love.graphics.clear(0xFF * math.min(1, math.max(screenEffects.hurtFlash, 0)), 0, 0)
   
   for id, entity in entities:each() do
-    if entity.drawable then
       love.graphics.origin()
       
       if entity.pos then 
         love.graphics.translate(entity.pos.x, entity.pos.y)
       end
       
-      entity:drawable()
-    end
+      eonz.event.dispatch(entity, game.event.draw) 
   end
   
   love.graphics.origin()

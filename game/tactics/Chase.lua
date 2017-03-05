@@ -4,7 +4,7 @@ local util = game.tactics.util
 local CLOSE_SPEED = 100
 local MAX_ACCEL = 300
 
-return function(args)
+return function(params)
   return function(env)
     local timer = 1 * math.random() + 1
     env.controller:setDamping(0.5)
@@ -30,7 +30,7 @@ return function(args)
       env.controller:accelerate(velError:normal() * MAX_ACCEL)
       
       if timer < 0 then
-        env.controller:setTactic(args.on_done(env))
+        util.completed(env, params)
       end
     end
     

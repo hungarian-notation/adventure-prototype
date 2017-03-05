@@ -1,4 +1,4 @@
-return function(keys, spawnEnemy, screenEffects, fonts)
+local function Controller(e, keys, spawnEnemy, screenEffects, fonts)
   
   local PLAYER_ACCEL = 1000
   local PLAYER_DAMP = 0.01
@@ -61,6 +61,12 @@ return function(keys, spawnEnemy, screenEffects, fonts)
   
   local function hitCallback(projectile, target, ecs)
     if target.enemy then
+      
+      
+      target:dispatch(game.event.attack, { damage=2, source=e })
+      
+      --[[
+      
       target.enemy.health = target.enemy.health - 1
       
       love.audio.play(game.res.sounds.hit)
@@ -76,6 +82,8 @@ return function(keys, spawnEnemy, screenEffects, fonts)
         game.res.sounds.kill:play()
         spawnEnemy(projectile:system())
       end
+      
+      ]]
       
       return false
     end
@@ -125,29 +133,14 @@ return function(keys, spawnEnemy, screenEffects, fonts)
           local relAngle = normalize(angleTo - lowerAngle)
           
           if relAngle < e.sword.theta then
-            game.res.sounds.hit:setPitch(1 + math.random() * 0.2)    
-            love.audio.play(game.res.sounds.hit)
-    
-            entity.enemy.health = entity.enemy.health - 1
-            
-            local damage = math.floor(math.random() * 20)
-            e:system():create(game.util.newDamageNumber(entity.pos + vector(0, -30), damage))
-              
-            if entity.enemy.health <= 0 then
-              entity:destroy()
-              game.res.sounds.kill:play()
-              spawnEnemy(e:system())
-            else
-              local knockBack = (e.sword.dir + toEntity:normal()) / 2 * KNOCK_BACK_IMPULSE / entity.enemy.mass
-              entity.vel = (entity.vel or vector.zero()) + knockBack
-            end
+            entity:dispatch(game.event.attack, { damage=1, source=e })
           end
         end
       end
     end
   end
   
-  return function(e, dt, ecs)
+  local function on_update(table, dt)
     
     for id, entity in e:each() do
       if entity.enemy then
@@ -215,4 +208,8 @@ return function(keys, spawnEnemy, screenEffects, fonts)
     e.pos = e.pos + ((e.vel or vector.zero()) * dt)
     e.vel = (e.vel or vector.zero()) * (anyControl and PLAYER_DAMP or PLAYER_NO_CONTROL_DAMP) ^ dt
   end
+  
+  return { on_update = on_update }
 end
+
+return eonz.entities.Injector(Controller)

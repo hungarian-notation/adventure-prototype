@@ -1,5 +1,5 @@
-return function(hitCallback)
-  return function(e, dt)
+return eonz.entities.Injector( function(e, hitCallback)
+  return { on_update = function(event, dt)
     e.pos = e.pos + e.vel * dt
     e.age = (e.age or 0) + dt
     
@@ -20,5 +20,5 @@ return function(hitCallback)
       -- This is a quick and dirty cleanup for projectiles that miss
       e:system():destroy(e)
     end
-  end
-end
+  end }
+end )

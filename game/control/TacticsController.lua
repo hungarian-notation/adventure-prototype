@@ -2,6 +2,8 @@ local AVOID_IMPULSE = 1000
 local DEFAULT_ACCEL = 100
 local DEFAULT_DAMP = 0.1
 
+local dispatchEvent = eonz.event.dispatch
+
 local function getAvoidanceAcceleration(entity, dt)
   local accel = vector.zero()
   
@@ -33,7 +35,7 @@ function TacticsController.new(entity, args)
     system = entity:system()
   }
   
-  if args.tactic then obj:setTactic(args.tactic) end
+  if args.strategy then obj:setStrategy(args.strategy) end
   
 	return obj
 end
@@ -46,8 +48,14 @@ function TacticsController:entity()
 	return self._entity
 end
 
+function TacticsController:setStrategy(strategy)
+	local tactic, listener = strategy(self._env)
+  self._listener = listener
+  self:setTactic(tactic)
+end
+
 function TacticsController:setTactic(protoTactic)
-  self._protoTactic = protoTactic
+  self._proto_tactic = protoTactic
 end
 
 function TacticsController:setDamping(damp)
@@ -66,19 +74,26 @@ function TacticsController:accelerate(vector)
   self._accel = (self._accel or eonz.vector(0,0)) + vector
 end
 
-function TacticsController:act(dt)
+function TacticsController:on_event(event, args)
+  if self._listener then dispatchEvent(self._listener, event, args) end
+  if self._tactic_listener then dispatchEvent(self._tactic_listener, event, args) end
+end
+
+function TacticsController:on_update(dt)
   local entity = self._entity
+  
+  assert(type(dt) == 'number')
   
   self:resetAcceleration()
   self:accelerate(getAvoidanceAcceleration(entity, dt))
   
-	if self._protoTactic then
-    self._tUpdate, self._tEvent = self._protoTactic(self._env)
-    self._protoTactic = nil
+	if self._proto_tactic then
+    self._tactic_update_function, self._tactic_listener = self._proto_tactic(self._env)
+    self._proto_tactic = nil
   end
   
-  if self._tUpdate then
-    self._tUpdate(dt)
+  if self._tactic_update_function then
+    self._tactic_update_function(dt)
   end
   
   entity.vel = (entity.vel or vector.zero()) + self._accel * dt
@@ -86,4 +101,4 @@ function TacticsController:act(dt)
   entity.pos = entity.pos + entity.vel * dt
 end
 
-return function(args) return require('eonz.Entities').InjectEntity(function(entity) return TacticsController.new(entity, args) end) end
+return function(args) return require('eonz.Entities').InjectorClosure(function(entity) return TacticsController.new(entity, args) end) end

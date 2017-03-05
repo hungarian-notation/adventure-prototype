@@ -1,16 +1,22 @@
+local Entity = eonz.detail.entity
+
 local Entities = {} ; Entities.__index = Entities
 
-function Entities.InjectEntity(func, ...)
+function Entities.EventHandler(event, handler)
+	return { [eonz.event.getHandlerFor(event)] = handler }
+end
+
+function Entities.InjectorClosure(func, ...)
   return {
-    _isEntityInjector = true,
-    _injectionTarget = func,
-    _injectionArgs = {...}
+    [Entity.INJECTOR_TAG] = true,
+    [Entity.INJECTOR_TARGET] = func,
+    [Entity.INJECTOR_ARGS] = {...}
   }
 end
 
-function Entities.InjectConfigured(func)
+function Entities.Injector(func)
   return function(...) 
-    return Entities.InjectEntity(func, ...)
+    return Entities.InjectorClosure(func, ...)
   end
 end
 
@@ -22,46 +28,20 @@ function Entities.new()
   return new
 end
 
-local Entity = {} ; Entity.__index = Entity
-
-function Entity:system()
-  return self._entities
-end
-
-function Entity:each()
-	return self:system():each()
-end
-
-function Entity:id()
-  return self._eid	
-end
-
-function Entity:destroy(other)
-  self:system():destroy(other or self)
-end
-
-function Entities:create(entity)
-  if entity._entities then
-    error("entity already has _entities tag")
-  else
-    setmetatable(entity, Entity)
-    
-    entity._entities = self
-    entity._eid = self._next
-    self._entities[entity._eid] = entity
-    self._next = entity._eid + 1
-    
-    for k, v in pairs(entity) do
-    	if type(v) == 'table' and v._isEntityInjector and type(v._injectionTarget) == 'function' then
-        entity[k] = v._injectionTarget(entity, unpack(v._injectionArgs))
-      end
-    end
-  end
+function Entities:create(components)
+  local id = self._next
+  
+  local entity = Entity.create(self, id, components)
+  
+  self._entities[id] = entity
+  self._next = id + 1
 end
 
 function Entities:destroy(entity)
-  if entity._entities == self then
+  if entity._entities == self then    
     if self._entities[entity._eid] == entity then
+      entity:dispatch('destroyed')
+      
       self._entities[entity._eid] = nil
       entity._entities = nil
       entity._eid = nil

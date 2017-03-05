@@ -1,7 +1,7 @@
 local tactics = game.tactics
 local util = game.tactics.util
 
-return function(args)
+return function(params)
   -- This function initializes the tactic, but the tactic doesn't
   -- yet know anything about the entity that will be using it.
   
@@ -17,7 +17,7 @@ return function(args)
     	-- This function is called each tick.
       
       if timer > 1 then
-        controller:setTactic(args.on_done(env))
+        util.completed(env, params)
       end
     end
     
