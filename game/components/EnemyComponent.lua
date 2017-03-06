@@ -42,7 +42,11 @@ local function EnemyTag(entity, params)
     entity.vel = (direction * knockback)
     
     if self.health <= 0 then
+      print('size: ', size)
+      
+      game.res.sounds.kill:setPitch(10 / entity.radius)
       game.res.sounds.kill:play()
+      
       eonz.event.dispatch(entity, game.event.death)  
       entity:destroy()
     else

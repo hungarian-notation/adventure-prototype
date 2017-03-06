@@ -1,6 +1,6 @@
 local challenges = game.challenges
 
--- local ADVANCE_TO = 99
+--local ADVANCE_TO = 149
 
 local function Spawner(entity, screen)
   local system = entity:system()

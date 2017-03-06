@@ -18,6 +18,9 @@ local function Controller(e, keys, screenEffects)
   local SWING_VELOCITY_LOSS = 0.25
   local KNOCK_BACK_IMPULSE = 300
   
+  local DODGE_TIME = 0.25
+  local DODGE_ACCEL = 3000
+  
   local nextSwingDirection = 1
   
   local function Sword(dir, color)
@@ -55,11 +58,11 @@ local function Controller(e, keys, screenEffects)
     return angle
   end
   
-  local function getDirection(e) 
+  local function getDirection() 
     return (vector.new(love.mouse.getPosition()) - e.pos):normal()
   end
   
-  local function attackRanged(e, dt)
+  local function attackRanged(dt)
     
     local function hitCallback(projectile, target, ecs)
       if target.enemy then
@@ -71,7 +74,7 @@ local function Controller(e, keys, screenEffects)
       return true
     end
   
-    local dir = getDirection(e)
+    local dir = getDirection()
     local vel = dir * BOW_SHOT_SPEED
     
     love.audio.play(game.res.sounds.shoot)
@@ -87,7 +90,7 @@ local function Controller(e, keys, screenEffects)
     }
   end
   
-  local function attackMelee(e, dt)
+  local function attackMelee(dt)
     
     local dir = getDirection(e)
     
@@ -119,15 +122,29 @@ local function Controller(e, keys, screenEffects)
     end
   end
   
+  local function dodge()
+    if e.sword then
+      e.sword = nil
+    end
+    
+    local dir = e.vel:normal()
+    e.dodge = { dir=dir, time=DODGE_TIME, radius=e.radius }    
+    e.radius = e.radius * 2 / 3
+  end
+  
   local function on_update(table, dt)
     
-    for id, entity in e:each() do
-      if entity.enemy then
-        if (entity.pos - e.pos):length() < ((entity.radius or 0) + (e.radius or 0)) then
-          screenEffects.hurtFlash = 0.2
+    if not e.dodge then
+      for id, entity in e:each() do
+        if entity.enemy then
+          if (entity.pos - e.pos):length() < ((entity.radius or 0) + (e.radius or 0)) then
+            screenEffects.hurtFlash = 0.2
+          end
         end
       end
     end
+    
+    -- Cooldowns
     
     if e.sword then      
       e.sword.time = e.sword.time + dt
@@ -145,13 +162,31 @@ local function Controller(e, keys, screenEffects)
     
     -- Sword Control
     
-    if not e.sword and love.mouse.isDown(1) then
-      attackMelee(e, dt, ecs)
+    if not e.sword and not e.dodge and love.mouse.isDown(1) then
+      attackMelee(dt)
     end
     
+    -- Bow Control
+    
     if not e.bowReload and love.mouse.isDown(2) then
-      attackRanged(e, dt, ecs)
+      attackRanged(dt)
       e.bowReload = BOW_RELOAD
+    end
+    
+    -- Dodge Control
+    
+    if not e.dodge and love.keyboard.isDown(keys.dodge) then
+      dodge()
+    end
+    
+    if e.dodge then
+      e.dodge.time = e.dodge.time - dt
+      if e.dodge.time <= 0 then
+        e.radius = e.dodge.radius
+        e.dodge = nil
+      else
+        e.vel = e.vel + (e.dodge.dir * DODGE_ACCEL * dt)
+      end
     end
     
     -- Movement Control
@@ -179,7 +214,7 @@ local function Controller(e, keys, screenEffects)
       anyControl = true
     end
     
-    if control:length2() > 0 then
+    if not e.dodge and control:length2() > 0 then
       local accel = control * PLAYER_ACCEL * dt
       e.vel = e.vel + (control * PLAYER_ACCEL * dt)
     end

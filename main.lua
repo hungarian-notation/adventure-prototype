@@ -17,7 +17,8 @@ local keys = {
   up    = 'w',
   left  = 'a',
   down  = 's',
-  right = 'd'
+  right = 'd',
+  dodge = 'space'
 }
 
 --

@@ -25,7 +25,7 @@ end
 --
 
 function Namespace:__call(key) return self[key] end
-
+ 
 function Namespace:__index(key)
   return self._loaded[key] or Namespace[key] or self._keystore[key] or self:get(key)
 end

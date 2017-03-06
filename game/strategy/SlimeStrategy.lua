@@ -25,7 +25,7 @@ return function(params)
     end
     
     function tactics.Lunge()
-      local lungeDuration = (0.5 * math.random() + 0.1) * endurance
+      local lungeDuration = (0.7 * math.random() + 0.1) * endurance
       return game.tactics.Lunge { on_completed=phases.AfterAttack, accel=lungeAccel, duration=lungeDuration  }
     end  
     

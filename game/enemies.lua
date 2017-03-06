@@ -31,23 +31,22 @@ local function split(slime, min, max)
   end
 end
 
-
 local SLIME_TYPES = {
   green = {
     color   = {0xAA, 0xCC, 0x44}, 
     health  = 2, 
     radius  = 10,
-    agility = 1,
+    agility = 0.75,
     flicker = 0,
     
     rarity  = 1
   },
   
   red = {
-    color   = {0x99, 0x22, 0x22}, 
+    color   = {0xFF, 0x44, 0x44}, 
     health  = 2, 
     radius  = 8,
-    agility = 3,
+    agility = 2.5,
     
     rarity  = 0.1
   },
@@ -97,9 +96,7 @@ local SLIME_TYPES = {
     health  = 8, 
     radius  = 26,
     agility = 4,
-    
     rarity  = 0.005,
-    
     script = split('pinky', 3, 5)
   },
   
@@ -137,7 +134,8 @@ function enemies.RandomSlime(roster)
       local allowed, rarity = getRarity(slime)
       
       if allowed then
-        table.insert(types, { name=slime, rarity=rarity })
+  
+  table.insert(types, { name=slime, rarity=rarity })
         totalRarity = totalRarity + rarity
       end
     end

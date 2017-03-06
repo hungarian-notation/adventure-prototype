@@ -43,7 +43,7 @@ return {
     },
     
     population = 6,
-    roster = { green=5, blue=3, red=3, big_green=1 }
+    roster = { green=5, blue=2, red=2, big_green=1 }
   },
   
   {
@@ -54,7 +54,7 @@ return {
       { slime='blue', count=5 }
     },
     
-    roster = { green=4, blue=4, red=4, big_green=2, huge_green=1 }
+    roster = { green=5, blue=3, red=2, big_green=1, huge_green=1 }
   },
   
   {
@@ -64,7 +64,18 @@ return {
       { slime='spy', count=1 }
     },
     
-    roster = { green=4, blue=4, red=4, big_green=2, huge_green=1 }
-  }
+    roster = { green=5, blue=3, red=3, big_green=2, huge_green=1, pinky=0.5, spy=0.5 }
+  },
   
+  
+  {
+    title = "Well S*!#.",
+    kills = 150,
+    spawn = {
+      { slime='clusterfuck', count=1 },
+      { slime='huge_green', count=2 }
+    },
+    
+    roster = { green=3, blue=3, red=3, big_green=2, huge_green=1, pinky=0.5, spy=0.5, clusterfuck=0.1 }
+  }
 }
