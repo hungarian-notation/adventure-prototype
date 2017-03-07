@@ -95,7 +95,7 @@ function love.update(dt)
   end
   
   for id, entity in entities:each() do
-    eonz.event.dispatch(entity, game.event.update, dt) 
+    eonz.event.dispatch(entity, game.event.Update, dt) 
   end
 end
 
@@ -113,7 +113,7 @@ function love.draw()
         love.graphics.translate(entity.pos.x, entity.pos.y)
       end
       
-      eonz.event.dispatch(entity, game.event.draw) 
+      eonz.event.dispatch(entity, game.event.Draw) 
     end
   end
   

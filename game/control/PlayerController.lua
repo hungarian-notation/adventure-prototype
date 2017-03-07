@@ -18,8 +18,8 @@ local function Controller(e, keys, screenEffects)
   local SWING_VELOCITY_LOSS = 0.25
   local KNOCK_BACK_IMPULSE = 300
   
-  local DODGE_TIME = 0.25
-  local DODGE_ACCEL = 3000
+  local DODGE_TIME = 0.5
+  local DODGE_ACCEL = 1800
   
   local nextSwingDirection = 1
   
@@ -67,7 +67,7 @@ local function Controller(e, keys, screenEffects)
     local function hitCallback(projectile, target, ecs)
       if target.enemy then
         local event = { damage=2, source=e }
-        target:dispatch(game.event.attack, event)
+        target:dispatch(game.event.Attack, event)
         return event.cancelled
       end
       
@@ -109,13 +109,13 @@ local function Controller(e, keys, screenEffects)
         local dist = toEntity:length() - (entity.radius * 2) 
                 
     
-        if dist <= hitDist then
+        if dist <= hitDist or love.keyboard.isDown('q') then
           local angleTo = toEntity:angle()
           local lowerAngle = e.sword.dir:angle() - e.sword.theta / 2
           local relAngle = normalize(angleTo - lowerAngle)
           
-          if relAngle < e.sword.theta then
-            entity:dispatch(game.event.attack, { damage=1, source=e })
+          if relAngle < e.sword.theta or love.keyboard.isDown('q') then
+            entity:dispatch(game.event.Attack, { damage=1, source=e })
           end
         end
       end
@@ -132,7 +132,7 @@ local function Controller(e, keys, screenEffects)
     e.radius = e.radius * 2 / 3
   end
   
-  local function on_update(table, dt)
+  local function onUpdate(table, dt)
     
     if not e.dodge then
       for id, entity in e:each() do
@@ -223,7 +223,7 @@ local function Controller(e, keys, screenEffects)
     e.vel = (e.vel or vector.zero()) * (anyControl and PLAYER_DAMP or PLAYER_NO_CONTROL_DAMP) ^ dt
   end
   
-  return { on_update = on_update }
+  return { onUpdate = onUpdate }
 end
 
 return eonz.entities.Injector(Controller)

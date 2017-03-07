@@ -1,5 +1,5 @@
 return eonz.entities.Injector( function(e, hitCallback)
-  return { on_update = function(event, dt)
+  return { onUpdate = function(event, dt)
     e.pos = e.pos + e.vel * dt
     e.age = (e.age or 0) + dt
     

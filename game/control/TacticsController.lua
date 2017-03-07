@@ -74,12 +74,12 @@ function TacticsController:accelerate(vector)
   self._accel = (self._accel or eonz.vector(0,0)) + vector
 end
 
-function TacticsController:on_event(event, args)
+function TacticsController:onEvent(event, args)
   if self._listener then dispatchEvent(self._listener, event, args) end
   if self._tactic_listener then dispatchEvent(self._tactic_listener, event, args) end
 end
 
-function TacticsController:on_update(dt)
+function TacticsController:onUpdate(dt)
   local entity = self._entity
   
   assert(type(dt) == 'number', 'expected number, found ' ..type(dt))

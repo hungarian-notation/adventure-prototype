@@ -1,12 +1,19 @@
-local LUNGE_ACCEL = 700
+local util = game.tactics.util
+
+local LUNGE_ACCEL = 500
+local LUNGE_DUR = 0.2
 local CHASE_ACCEL = 300
+
+local LUNGE_RANGE = 200
+
+local LUNGE_ADJUST = 5
 
 return function(params)
   
   local agility = params.agility or 1
   local endurance = 1 / ((agility + 2) / 3)
   
-  local lungeAccel = LUNGE_ACCEL * agility
+  local lungeAccel = LUNGE_ACCEL * ((agility + LUNGE_ADJUST) / (LUNGE_ADJUST + 1))
   local chaseAccel = CHASE_ACCEL * agility
   
   return function(env)
@@ -16,17 +23,24 @@ return function(params)
     local tactics = {}
     
     function tactics.Wait(time)
-      return game.tactics.Wait { on_completed=phases.StartAttack, time=time }
+      return game.tactics.Wait { onCompleted=phases.StartAttack, time=time or 1.0 / (endurance * 2) }
     end
     
     function tactics.Chase()
       local chaseDuration = (1 * math.random() + 1) * endurance
-      return game.tactics.Chase { on_completed=phases.AfterChase, accel=chaseAccel, duration=chaseDuration }
+      return game.tactics.Chase { onCompleted=phases.AfterChase, accel=chaseAccel, duration=chaseDuration }
     end
     
     function tactics.Lunge()
-      local lungeDuration = (0.7 * math.random() + 0.1) * endurance
-      return game.tactics.Lunge { on_completed=phases.AfterAttack, accel=lungeAccel, duration=lungeDuration  }
+      local toPlayer = util.getPlayer(env.system) - env.entity.pos
+      local dist = toPlayer:length()
+      
+      if dist < LUNGE_RANGE then
+        local lungeDuration = (LUNGE_DUR) * endurance
+        return game.tactics.Lunge { onCompleted=phases.AfterAttack, accel=lungeAccel, duration=lungeDuration  }
+      else
+        return tactics.Wait()
+      end
     end  
     
     function phases.StartAttack()
@@ -48,15 +62,15 @@ return function(params)
     end
     
     function phases.AfterInjured()
-      return tactics.Wait(1.0 / endurance)
+      return tactics.Wait()
     end
     
-    local function on_event(event, args) 
-      if event == game.event.injured then        
+    local function onEvent(event, args) 
+      if event == game.event.Injured then        
         env.controller:setTactic(phases.AfterInjured())
       end
     end
     
-    return tactics.Wait(0.5), on_event
+    return tactics.Wait(0.5), onEvent
   end
 end

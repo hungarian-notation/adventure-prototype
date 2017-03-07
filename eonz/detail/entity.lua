@@ -54,6 +54,10 @@ function Entity:add(component)
   table.insert(self, self:resolve(component))
 end
 
+function Entity:broadcast(event, ...)
+	self:system():broadcast(self, event, ...)
+end
+
 function Entity:dispatch(event, ...)
   local targets = {}
   
@@ -68,7 +72,7 @@ function Entity:dispatch(event, ...)
   end
 end
 
-function Entity:on_event(event, ...)
+function Entity:onEvent(event, ...)
   self:dispatch(event, ...)
 end
 

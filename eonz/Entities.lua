@@ -50,9 +50,11 @@ function Entities:destroy(entity)
   end
 end
 
-function Entities:broadcast(event, ...)
+function Entities:broadcast(src, event, ...)
 	for id, entity in self:each() do
-    entity:dispatch(event, ...)
+    if entity ~= src then
+      entity:dispatch(event, ...)
+    end
   end
 end
 

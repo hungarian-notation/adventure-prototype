@@ -12,12 +12,12 @@ local function EnemyTag(entity, params)
   enemy.health = enemy.maxHealth
   enemy.active = false
   
-  function enemy:on_update(dt)
+  function enemy:onUpdate(dt)
     self.active = true
-    self.on_update = nil
+    self.onUpdate = nil
   end
   
-  function enemy:on_attack(attack)
+  function enemy:onAttack(attack)
     if entity.flicker or not self.active then
       attack.cancelled = true
       return
@@ -42,15 +42,15 @@ local function EnemyTag(entity, params)
     entity.vel = (direction * knockback)
     
     if self.health <= 0 then
-      print('size: ', size)
-      
       game.res.sounds.kill:setPitch(10 / entity.radius)
       game.res.sounds.kill:play()
       
-      eonz.event.dispatch(entity, game.event.death)  
+      eonz.event.dispatch(entity, game.event.Death)  
+      entity:broadcast(game.event.EnemyKilled, { who=entity })
+      
       entity:destroy()
     else
-      eonz.event.dispatch(entity, game.event.injured, { damage=attack.damage })
+      eonz.event.dispatch(entity, game.event.Injured, { damage=attack.damage })
     end
   end
   

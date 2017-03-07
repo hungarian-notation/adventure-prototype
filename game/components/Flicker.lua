@@ -9,7 +9,7 @@ local function Flicker(entity, duration, rate)
   
   local flicker = {}
   
-  function flicker:on_update(dt)
+  function flicker:onUpdate(dt)
     assert(type(dt) == 'number')
     assert(entity.flicker)
     

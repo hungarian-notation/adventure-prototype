@@ -36,15 +36,8 @@ local function Spawner(entity, screen)
     return count
   end
   
-  function self:DeathTracker()
-    local spawner = self
-    local tracker = {}
-    
-    function tracker:on_death()
-    	spawner.kills = spawner.kills + 1
-    end
-    
-    return tracker
+  function self:onEnemyKilled(event)
+    self.kills = self.kills + 1
   end
   
   function self:startChallenge()
@@ -61,7 +54,6 @@ local function Spawner(entity, screen)
         spawned.pos = pos
         spawned.vel = dir * 1000
         spawned = system:create(spawned) 
-        spawned:add(self:DeathTracker())
         
       end
     end
@@ -77,7 +69,7 @@ local function Spawner(entity, screen)
     challenge.completed = true
   end
   
-  function self:on_update(dt)
+  function self:onUpdate(dt)
     self.time = self.time + dt
     
     if not self.nextChallenge then
@@ -101,12 +93,11 @@ local function Spawner(entity, screen)
       
       for i = 1, toSpawn do
         local entity = game.enemies.spawn(system, self.roster)
-        entity:add(self:DeathTracker())
       end
     end
   end
   
-  function self:on_draw()
+  function self:onDraw()
     love.graphics.origin()
     
     local width, height = love.window.getMode()

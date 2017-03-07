@@ -2,6 +2,13 @@ local util = {}
 
 local dispatch = eonz.event.dispatch
 
+function util.getPlayer(sys)
+  for id, entity in sys:each() do
+    if entity.isPlayer then return entity.pos end
+  end
+  return nil
+end
+
 function util.getPlayerPosition(entities)
   for id, entity in entities:each() do
     if entity.isPlayer then return entity.pos end
@@ -21,7 +28,7 @@ function util.message(env, handlers, name, ...)
 end
 
 function util.completed(env, handlers)
-  env.controller:setTactic(util.message(env, handlers, 'completed'))
+  env.controller:setTactic(util.message(env, handlers, 'Completed'))
 end
 
 return eonz.table.seal(util)

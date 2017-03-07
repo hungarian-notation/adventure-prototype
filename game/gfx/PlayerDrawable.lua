@@ -4,7 +4,7 @@ local function PlayerDrawable(e, avatar)
   local SWORD_BLADE_SIZE = 0.1
   
   return {
-    on_draw = function()      
+    onDraw = function()      
       if e.sword then
         local sword = e.sword
         
@@ -39,7 +39,7 @@ local function PlayerDrawable(e, avatar)
         love.graphics.setStencilTest()
       end
       
-      eonz.event.dispatch(avatar, 'draw')
+      eonz.event.dispatch(avatar, game.event.Draw)
     end
   }
 end

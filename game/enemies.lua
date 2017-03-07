@@ -9,7 +9,7 @@ local function split(slime, min, max)
     local system = entity:system()
     
     return {
-      on_death = function() 
+      onDeath = function() 
         
         local count = min + (max and math.floor((max - min) * math.random() + 1) or 0)
         

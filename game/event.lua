@@ -1,10 +1,13 @@
 local event_names = {} ; local function declare_event( name ) event_names[name] = name end
 
-declare_event 'update'
-declare_event 'draw'
-declare_event 'attack'
-declare_event 'death'
-declare_event 'injured'
+declare_event 'Update'
+declare_event 'Draw'
+declare_event 'Attack'
+
+declare_event 'EnemyKilled'
+
+declare_event 'Death'
+declare_event 'Injured'
 
 setmetatable(event_names, {
   __index = function(table, key) error("no such event: ".. tostring(key)) end  
